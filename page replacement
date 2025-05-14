@@ -1,0 +1,166 @@
+
+Write a C program to simulate page replacement algorithms:
+a.	FIFO
+b.	LRU
+c.	Optimal
+
+#include <stdio.h>
+int n, f;
+int in[100];
+int p[50];
+int pgfaultcnt = 0;
+
+void getData() {
+    printf("\nEnter length of page reference sequence: ");
+    scanf("%d", &n);
+    printf("Enter the page reference sequence: ");
+    for (int i = 0; i < n; i++)
+        scanf("%d", &in[i]);
+    printf("Enter number of frames: ");
+    scanf("%d", &f);
+}
+
+void initialize() {
+    pgfaultcnt = 0;
+    for (int i = 0; i < f; i++)
+        p[i] = -1;
+}
+
+int isHit(int data) {
+    for (int j = 0; j < f; j++) {
+        if (p[j] == data)
+            return 1;
+    }
+    return 0;
+}
+
+void dispPages() {
+    for (int k = 0; k < f; k++) {
+        if (p[k] != -1)
+            printf(" %d", p[k]);
+    }
+    printf("\n");
+}
+
+void dispPgFaultCnt() {
+    printf("\nTotal number of page faults: %d\n", pgfaultcnt);
+}
+
+void fifo() {
+    initialize();
+    int pointer = 0;
+    for (int i = 0; i < n; i++) {
+        printf("\nFor %d :", in[i]);
+        if (!isHit(in[i])) {
+            p[pointer] = in[i];
+            pointer = (pointer + 1) % f;
+            pgfaultcnt++;
+            dispPages();
+        } else {
+            printf("No page fault\n");
+        }
+    }
+    dispPgFaultCnt();
+}
+
+void optimal() {
+    initialize();
+    int near[50];
+    for (int i = 0; i < n; i++) {
+        printf("\nFor %d :", in[i]);
+        if (!isHit(in[i])) {
+            for (int j = 0; j < f; j++) {
+                int pg = p[j];
+                int found = 0;
+                for (int k = i + 1; k < n; k++) {
+                    if (pg == in[k]) {
+                        near[j] = k;
+                        found = 1;
+                        break;
+                    }
+                }
+                if (!found)
+                    near[j] = 9999;
+            }
+
+            int max = -1, repindex = -1;
+            for (int j = 0; j < f; j++) {
+                if (near[j] > max) {
+                    max = near[j];
+                    repindex = j;
+                }
+            }
+
+            p[repindex] = in[i];
+            pgfaultcnt++;
+            dispPages();
+        } else {
+            printf("No page fault\n");
+        }
+    }
+    dispPgFaultCnt();
+}
+
+void lru() {
+    initialize();
+    int least[50];
+    for (int i = 0; i < n; i++) {
+        printf("\nFor %d :", in[i]);
+        if (!isHit(in[i])) {
+            for (int j = 0; j < f; j++) {
+                int pg = p[j];
+                int found = 0;
+                for (int k = i - 1; k >= 0; k--) {
+                    if (pg == in[k]) {
+                        least[j] = k;
+                        found = 1;
+                        break;
+                    }
+                }
+                if (!found)
+                    least[j] = -9999;
+            }
+            int min = 9999, repindex = -1;
+            for (int j = 0; j < f; j++) {
+                if (least[j] < min) {
+                    min = least[j];
+                    repindex = j;
+                }
+            }
+            p[repindex] = in[i];
+            pgfaultcnt++;
+            dispPages();
+        } else {
+            printf("No page fault\n");
+        }
+    }
+    dispPgFaultCnt();
+}
+
+int main() {
+    int choice;
+    while (1) {
+        printf("\nPage Replacement Algorithms");
+        printf("\n1. Enter Data");
+        printf("\n2. FIFO");
+        printf("\n3. Optimal");
+        printf("\n4. LRU");
+        printf("\n5. Exit");
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: getData(); break;
+            case 2: fifo(); break;
+            case 3: optimal(); break;
+            case 4: lru(); break;
+            case 5: return 0;
+            default: printf("Invalid choice. Please try again.\n");
+        }
+    }
+    return 0;
+}
+ 
+
+ 
+ 
